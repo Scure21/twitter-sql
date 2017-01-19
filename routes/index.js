@@ -6,37 +6,21 @@ var client = require('../db/index');
 
 module.exports = function makeRouterWithSockets (io) {
 
-  //db test
-//   var usersName = client.query('SELECT name FROM users', function (err, result) {
-//   if (err) {return next(err);}
-//   else {
-//     var names = result.rows;
-//     console.log(names)
-//      names.forEach(person =>{
-//     //return(names.name);
-//     console.log(person.name);
-//   })
-//   }// pass errors to Express
-
-
-//   // console.log(tweets)
-// });
-
   // a reusable function
   function respondWithAllTweets (req, res, next){
-    client.query('SELECT name FROM users', function (err, result) {
-     if (err) {return next(err);}
-    else {
-        var names = result.rows;
+    //Querying the tweets
+    client.query('SELECT tweets.content, users.name FROM tweets JOIN users ON users.id=tweets.user_id', function(err, result){
+      if(err){return next(err)}
+      else{
+        var tweet = result.rows;
         res.render('index', {
-        title: 'Twitter.js',
-        tweets: names,
-        showForm: true
-      });
-    }
-  })
-}
-
+          title: 'Twitter.js',
+          tweets : tweet,
+          showForm: true
+        })
+      }
+    })
+  }
 
   // here we basically treet the root view and tweets view as identical
   router.get('/', respondWithAllTweets);
@@ -44,19 +28,7 @@ module.exports = function makeRouterWithSockets (io) {
 
   // single-user page
   router.get('/users/:username', function(req, res, next){
-    var tweetsForName = client.query("SELECT users.name, tweets.content FROM users JOIN tweets ON tweets.user_id=users.id" , function(err, result){
-      if(err){
-        return next(err);
-      }else{
-        res.render('index', {
-        title: 'Twitter.js',
-        tweets: result.row(tweetsForName),
-        showForm: true,
-        username: req.params.username
-    });
-      }
-      console.log(results.rows)
-    });
+
   });
 
   // single-tweet page
