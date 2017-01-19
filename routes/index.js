@@ -28,16 +28,35 @@ module.exports = function makeRouterWithSockets (io) {
 
   // single-user page
   router.get('/users/:username', function(req, res, next){
-
+    var username = req.params.username;
+    client.query('SELECT tweets.content, users.name FROM tweets JOIN users ON users.id = tweets.user_id WHERE users.name = $1', [username], function(err, result){
+      if(err){return next(err)}
+      else{
+        var userTweet = result.rows;
+        res.render('index', {
+          title: 'Twitter.js',
+          tweets: userTweet,
+          showForm: true,
+          username: username
+        })
+      }
+    })
   });
 
   // single-tweet page
   router.get('/tweets/:id', function(req, res, next){
-    var tweetsWithThatId = data.find({ id: Number(req.params.id) });
-    res.render('index', {
-      title: 'Twitter.js',
-      tweets: tweetsWithThatId // an array of only one element ;-)
-    });
+    var tweetId = Number(req.params.id);
+    console.log(req.params);
+    client.query('SELECT * FROM tweets JOIN users ON users.id = tweets.user_id WHERE tweets.id = $1', [tweetId], function(err, result){
+      if(err){return next(err)}
+      else {
+        var singleTweet = result.rows;
+        res.render('index', {
+          title: 'Twitter.js',
+          tweets: singleTweet
+        })
+      }
+    })
   });
 
   // create a new tweet
